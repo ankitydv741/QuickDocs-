@@ -1,0 +1,463 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:sans-serif;
+}
+
+
+
+body{
+
+  width:380px;
+
+  min-height:500px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #1e293b
+    );
+
+  color:white;
+
+  overflow:hidden;
+}
+
+
+
+/* MAIN CONTAINER */
+.container{
+
+  padding:18px;
+
+  height:100vh;
+
+  overflow-y:auto;
+}
+
+
+
+/* HEADER */
+.header{
+
+  margin-bottom:18px;
+}
+
+
+
+.header h1{
+
+  font-size:28px;
+
+  font-weight:700;
+
+  margin-bottom:4px;
+}
+
+
+
+.header p{
+
+  font-size:13px;
+
+  color:#cbd5e1;
+}
+
+
+
+/* SEARCH */
+#searchInput{
+
+  width:100%;
+
+  padding:12px;
+
+  border:none;
+
+  outline:none;
+
+  border-radius:14px;
+
+  margin-bottom:14px;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  color:white;
+
+  backdrop-filter:blur(10px);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.12);
+}
+
+
+
+#searchInput::placeholder{
+
+  color:#cbd5e1;
+}
+
+
+
+/* ADD BUTTON */
+#addBtn{
+
+  width:100%;
+
+  padding:13px;
+
+  border:none;
+
+  border-radius:14px;
+
+  cursor:pointer;
+
+  font-size:15px;
+
+  font-weight:600;
+
+  margin-bottom:18px;
+
+  color:white;
+
+  background:
+    rgba(255,255,255,0.1);
+
+  backdrop-filter:blur(12px);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.15);
+
+  transition:0.25s;
+}
+
+
+
+#addBtn:hover{
+
+  transform:translateY(-2px);
+
+  background:
+    rgba(255,255,255,0.16);
+}
+
+
+
+/* DOCUMENT ROW */
+.doc-row{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:10px;
+
+  padding:14px;
+
+  margin-bottom:12px;
+
+  border-radius:18px;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  backdrop-filter:blur(14px);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.1);
+
+  transition:0.25s;
+}
+
+
+
+.doc-row:hover{
+
+  transform:translateY(-2px);
+
+  background:
+    rgba(255,255,255,0.12);
+}
+
+
+
+/* LEFT */
+.doc-left{
+
+  flex:1;
+
+  cursor:pointer;
+
+  overflow:hidden;
+}
+
+
+
+.doc-left:hover{
+
+  opacity:0.9;
+}
+
+
+
+/* FILE NAME */
+.doc-left{
+
+  font-size:14px;
+
+  font-weight:500;
+
+  word-break:break-word;
+}
+
+
+
+/* CATEGORY */
+.doc-meta{
+
+  margin-top:5px;
+
+  font-size:12px;
+
+  color:#cbd5e1;
+}
+
+
+
+/* ACTIONS */
+.doc-actions{
+
+  display:flex;
+
+  gap:8px;
+}
+
+
+
+/* BUTTONS */
+.edit-btn,
+.delete-btn{
+
+  border:none;
+
+  cursor:pointer;
+
+  width:38px;
+
+  height:38px;
+
+  border-radius:12px;
+
+  color:white;
+
+  font-size:16px;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  backdrop-filter:blur(10px);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.12);
+
+  transition:0.2s;
+}
+
+
+
+.edit-btn:hover,
+.delete-btn:hover{
+
+  transform:scale(1.06);
+
+  background:
+    rgba(255,255,255,0.15);
+}
+
+
+
+/* MODAL */
+.modal{
+
+  position:fixed;
+
+  inset:0;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  background:
+    rgba(0,0,0,0.7);
+
+  z-index:9999;
+
+  backdrop-filter:blur(8px);
+}
+
+
+
+/* HIDDEN */
+.hidden{
+
+  display:none;
+}
+
+
+
+/* MODAL CONTENT */
+.modal-content{
+
+  width:90%;
+
+  padding:22px;
+
+  border-radius:24px;
+
+  background:
+    rgba(15,23,42,0.95);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.1);
+
+  box-shadow:
+    0 10px 40px
+    rgba(0,0,0,0.4);
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:14px;
+
+  position:relative;
+
+  z-index:10000;
+}
+
+
+
+/* MODAL TITLE */
+.modal-content h2{
+
+  font-size:22px;
+
+  margin-bottom:4px;
+}
+
+
+
+/* INPUTS */
+.modal-content input{
+
+  width:100%;
+
+  padding:13px;
+
+  border:none;
+
+  outline:none;
+
+  border-radius:14px;
+
+  color:white;
+
+  background:
+    rgba(255,255,255,0.08);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.12);
+
+  backdrop-filter:blur(10px);
+
+  font-size:14px;
+}
+
+
+
+/* PLACEHOLDER */
+.modal-content input::placeholder{
+
+  color:#cbd5e1;
+}
+
+
+
+/* FILE INPUT */
+#replaceFile{
+
+  padding:10px;
+
+  cursor:pointer;
+}
+
+
+
+/* SAVE BUTTON */
+#saveChangesBtn{
+
+  width:100%;
+
+  padding:14px;
+
+  border:none;
+
+  cursor:pointer;
+
+  border-radius:14px;
+
+  font-size:15px;
+
+  font-weight:600;
+
+  color:white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #3b82f6
+    );
+
+  transition:0.25s;
+}
+
+
+
+#saveChangesBtn:hover{
+
+  transform:translateY(-2px);
+
+  opacity:0.95;
+}
+
+
+
+/* SCROLLBAR */
+::-webkit-scrollbar{
+
+  width:6px;
+}
+
+
+
+::-webkit-scrollbar-thumb{
+
+  background:
+    rgba(255,255,255,0.18);
+
+  border-radius:20px;
+}

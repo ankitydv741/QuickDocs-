@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    QuickDocs
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="popup.css"
+  />
+
+</head>
+
+<body>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+
+      <h1>
+        QuickDocs ᯓ ✈︎
+      </h1>
+
+      <p>
+        Smart Local Document Assistant
+      </p>
+
+    </div>
+
+
+
+    <!-- SEARCH -->
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search documents..."
+    />
+
+
+
+    <!-- ADD BUTTON -->
+    <button id="addBtn">
+
+      + Add Document
+
+    </button>
+
+
+
+    <!-- HIDDEN FILE INPUT -->
+    <input
+      type="file"
+      id="fileInput"
+      hidden
+    />
+
+
+
+    <!-- DOCUMENT LIST -->
+    <div id="docList">
+
+    </div>
+
+  </div>
+
+
+
+  <!-- EDIT MODAL -->
+  <div
+    id="editModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content">
+
+      <h2>
+        Edit Document
+      </h2>
+
+
+
+      <!-- FILE NAME -->
+      <input
+        id="editName"
+        placeholder="Document Name"
+      />
+
+
+
+      <!-- CATEGORY -->
+      <input
+        id="editCategory"
+        placeholder="
+        Category:
+        Resume, Education,
+        Aadhaar, PAN
+        "
+      />
+
+
+
+      <!-- TAGS -->
+      <input
+        id="editTags"
+        placeholder="
+        Matching keywords:
+        cv, applicant, XII,
+        senior secondary
+        "
+      />
+
+
+
+      <!-- REPLACE FILE -->
+      <input
+        type="file"
+        id="replaceFile"
+      />
+
+
+
+      <!-- SAVE BUTTON -->
+      <button id="saveChangesBtn">
+
+        Save Changes
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <script
+    type="module"
+    src="popup.js"
+  ></script>
+
+</body>
+
+</html>
