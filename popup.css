@@ -461,3 +461,34 @@ body{
 
   border-radius:20px;
 }
+
+.logo-container{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:1px;
+
+    margin-bottom:4px;
+}
+
+.logo-text{
+
+    font-size:32px;
+
+    font-weight:700;
+
+    margin:0;
+
+    color:white;
+}
+
+.logo-img{
+
+    width:100px;
+
+    height:100px;
+
+    object-fit:contain;
+}

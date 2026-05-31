@@ -5,8 +5,7 @@
 
   "version": "1.0",
 
-  "description":
-    "Smart Local Document Upload Assistant",
+  "description": "Smart Local Document Upload Assistant",
 
   "permissions": [
     "storage",
@@ -18,8 +17,15 @@
     "<all_urls>"
   ],
 
+  "icons": {
+    "128": "OnlyLogo.png"
+  },
+
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "OnlyLogo.png"
+    }
   },
 
   "background": {
