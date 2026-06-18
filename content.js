@@ -761,32 +761,63 @@ async function injectFile(
 
   try{
 
-    const realFile =
-      new File(
-
-        [doc.file],
-
-        doc.name,
-
-        {
-          type:
-            doc.file.type ||
-            "application/octet-stream"
-        }
-
-      );
+    console.log("DOC:", doc);
+console.log("BUFFER:", doc.buffer);
+console.log(
+  "IS ARRAYBUFFER:",
+  doc.buffer instanceof ArrayBuffer
+);
 
 
+const uint8Array =
+  new Uint8Array(
+    doc.buffer
+  );
 
-    const dataTransfer =
-      new DataTransfer();
+const blob =
+  new Blob(
 
+    [uint8Array],
 
+    {
+      type:
+        doc.type ||
+        "application/octet-stream"
+    }
 
-    dataTransfer.items.add(
-      realFile
-    );
+  );
 
+const realFile =
+  new File(
+
+    [blob],
+
+    doc.name,
+
+    {
+      type:
+        doc.type ||
+        "application/octet-stream",
+
+      lastModified:
+        doc.lastModified ||
+        Date.now()
+    }
+
+  );
+
+console.log("REAL FILE:", realFile);
+console.log("NAME:", realFile.name);
+console.log("TYPE:", realFile.type);
+console.log("SIZE:", realFile.size);
+console.log("IS FILE:", realFile instanceof File);
+
+const dataTransfer =
+  new DataTransfer();
+
+dataTransfer.items.add(
+  realFile
+);
 
 
     input.files =

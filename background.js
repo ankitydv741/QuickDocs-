@@ -123,13 +123,31 @@ chrome.runtime.onMessage.addListener(
       "GET_DOCUMENTS"
     ){
 
-      getDocuments()
-      .then(docs=>{
+getDocuments()
+.then(docs=>{
 
-        sendResponse(docs);
+  console.log("BACKGROUND DOCS:", docs);
 
-      });
+  if(docs.length){
 
+  
+  }
+
+  const serializedDocs = docs.map(doc => ({
+
+  ...doc,
+
+  buffer: doc.buffer
+    ? Array.from(
+        new Uint8Array(doc.buffer)
+      )
+    : null
+
+}));
+
+sendResponse(serializedDocs);
+
+});
 
 
       return true;

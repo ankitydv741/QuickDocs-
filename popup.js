@@ -75,20 +75,28 @@ fileInput.addEventListener(
 
 
 
-    const documentData = {
+   const buffer =
+  await file.arrayBuffer();
 
-      name:file.name,
+const documentData = {
 
-      category:"General",
+  name:file.name,
 
-      tags:[],
+  category:"General",
 
-      file:file,
+  tags:[],
 
-      createdAt:
-        new Date().toISOString()
+  buffer:buffer,
 
-    };
+  type:file.type,
+
+  lastModified:
+    file.lastModified,
+
+  createdAt:
+    new Date().toISOString()
+
+};
 
 
 
@@ -276,27 +284,42 @@ function renderDocuments(docs){
 
 
     // OPEN FILE
-    row.querySelector(
-      ".clickable-file"
-    )
+   row.querySelector(
+  ".clickable-file"
+)
+.addEventListener(
+  "click",
+  ()=>{
 
-    .addEventListener(
-      "click",
-      ()=>{
+    if(!doc.buffer)
+      return;
 
-        const url =
-          URL.createObjectURL(
-            doc.file
-          );
+    const uint8Array =
+      new Uint8Array(
+        doc.buffer
+      );
 
+    const blob =
+      new Blob(
+        [uint8Array],
+        {
+          type:
+            doc.type ||
+            "application/octet-stream"
+        }
+      );
 
+    const url =
+      URL.createObjectURL(
+        blob
+      );
 
-        window.open(
-          url,
-          "_blank"
-        );
+    window.open(
+      url,
+      "_blank"
+    );
 
-    });
+});
 
 
 
@@ -424,12 +447,18 @@ async function saveCurrentDocument(){
 
 
 
-  if(newFile){
+ if(newFile){
 
-    currentEditingDoc.file =
-      newFile;
-  }
+  currentEditingDoc.buffer =
+    await newFile.arrayBuffer();
 
+  currentEditingDoc.type =
+    newFile.type;
+
+  currentEditingDoc.lastModified =
+    newFile.lastModified;
+
+}
 
 
   await updateDocument(
