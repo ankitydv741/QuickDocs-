@@ -41,7 +41,15 @@
       "js": [
         "content.js"
       ]
-    }
+    },
+    {
+  "matches": [
+    "https://mail.google.com/*"
+  ],
+  "js": [
+    "gmail.js"
+  ]
+}
   ],
 
   "web_accessible_resources": [
