@@ -376,9 +376,34 @@
 }
 
 
-
 .qd-change-btn:hover{
 
     background:
     rgba(255,255,255,0.22);
+}
+
+
+.qd-success-actions{
+    display:flex;
+    gap:8px;
+    width:100%;
+    margin-top:4px;
+}
+
+.qd-success-actions .qd-change-btn,
+.qd-success-actions .qd-addmore-btn{
+    flex:1;
+    border:none;
+    background: rgba(255,255,255,0.12);
+    color:white;
+    padding:7px 10px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:11px;
+    transition:0.2s;
+}
+
+.qd-success-actions .qd-change-btn:hover,
+.qd-success-actions .qd-addmore-btn:hover{
+    background: rgba(255,255,255,0.22);
 }

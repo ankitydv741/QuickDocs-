@@ -19,6 +19,77 @@ document.head.appendChild(gmailStyle);
 
 
 // --------------------------------
+// SHARED POSITIONING LOGIC
+// Used by both the initial popup
+// and the post-upload success view,
+// since the box height changes when
+// the chooser opens/closes and both
+// need to reposition correctly.
+// --------------------------------
+
+function positionPopup(wrapper, box, attachButton) {
+
+    const rect =
+        attachButton.getBoundingClientRect();
+
+    wrapper.style.position = "fixed";
+
+    // Measure the popup itself so we know how much
+    // room it actually needs (box.offsetHeight is 0
+    // until it's rendered, so read it live each time).
+    const popupHeight =
+        box.offsetHeight || 260;
+
+    const popupWidth =
+        box.offsetWidth || 180;
+
+    const spaceBelow =
+        window.innerHeight - rect.top;
+
+    const spaceAbove =
+        rect.bottom;
+
+    let top;
+
+    if (spaceBelow >= popupHeight + 10) {
+
+        // enough room below → open downward
+        top = rect.top - 10;
+
+    } else if (spaceAbove >= popupHeight + 10) {
+
+        // not enough below, but enough above → open upward
+        top = rect.bottom - popupHeight + 10;
+
+    } else {
+
+        // neither side has full room → clamp inside viewport
+        top = Math.max(
+            10,
+            window.innerHeight - popupHeight - 10
+        );
+
+    }
+
+    let left =
+        rect.right + 8;
+
+    // Also guard against overflowing the right edge
+    if (left + popupWidth > window.innerWidth) {
+
+        left =
+            rect.left - popupWidth - 8;
+
+    }
+
+    wrapper.style.top = top + "px";
+
+    wrapper.style.left = left + "px";
+
+}
+
+
+// --------------------------------
 // GET DOCUMENTS
 // --------------------------------
 
@@ -214,6 +285,11 @@ async function createAttachPopup(
 
     let selectedDoc = documents[0];
 
+    // Tracks every doc successfully attached in THIS compose
+    // window so the success screen can list them all and
+    // "Add More" can keep appending without losing history.
+    let uploadedDocs = [];
+
     const wrapper = document.createElement("div");
 
     wrapper.className =
@@ -271,13 +347,17 @@ async function createAttachPopup(
                         data-id="${doc.id}"
                     >
 
-                        📄 ${doc.name}
+                        <span class="qd-check">☐</span> 📄 ${doc.name}
 
                     </div>
 
                 `).join("")}
 
             </div>
+
+            <button class="qd-attach-selected-btn" disabled>
+                Attach Selected
+            </button>
 
         </div>
 
@@ -308,63 +388,7 @@ async function createAttachPopup(
 
     function position() {
 
-        const rect =
-
-            attachButton.getBoundingClientRect();
-
-        wrapper.style.position = "fixed";
-
-        // Measure the popup itself so we know how much
-        // room it actually needs (box.offsetHeight is 0
-        // until it's rendered, so read it live each time).
-        const popupHeight =
-            box.offsetHeight || 260;
-
-        const popupWidth =
-            box.offsetWidth || 180;
-
-        const spaceBelow =
-            window.innerHeight - rect.top;
-
-        const spaceAbove =
-            rect.bottom;
-
-        let top;
-
-        if (spaceBelow >= popupHeight + 10) {
-
-            // enough room below → open downward
-            top = rect.top - 10;
-
-        } else if (spaceAbove >= popupHeight + 10) {
-
-            // not enough below, but enough above → open upward
-            top = rect.bottom - popupHeight + 10;
-
-        } else {
-
-            // neither side has full room → clamp inside viewport
-            top = Math.max(
-                10,
-                window.innerHeight - popupHeight - 10
-            );
-
-        }
-
-        let left =
-            rect.right + 8;
-
-        // Also guard against overflowing the right edge
-        if (left + popupWidth > window.innerWidth) {
-
-            left =
-                rect.left - popupWidth - 8;
-
-        }
-
-        wrapper.style.top = top + "px";
-
-        wrapper.style.left = left + "px";
+        positionPopup(wrapper, box, attachButton);
 
     }
 
@@ -472,7 +496,11 @@ async function createAttachPopup(
 
                 attachButton,
 
-                wrapper
+                wrapper,
+
+                documents,
+
+                uploadedDocs
 
             );
 
@@ -490,12 +518,15 @@ async function createAttachPopup(
 
             chooser.classList.toggle("hidden");
 
+            // The box just grew/shrank (chooser has a
+            // search bar + list + button), so re-measure
+            // and reposition immediately rather than
+            // waiting for the next scroll/resize event.
+            position();
+
+            requestAnimationFrame(position);
+
         });
-
-
-    // --------------------------------
-    // SEARCH
-    // --------------------------------
 
     searchInput.addEventListener("focus", () => {
 
@@ -503,12 +534,75 @@ async function createAttachPopup(
 
     });
 
+
+    // --------------------------------
+    // MULTI-SELECT + ATTACH SELECTED
+    // --------------------------------
+
+    setupChooserMultiSelect(
+
+        chooser,
+
+        documents,
+
+        async (doc) => {
+
+            await injectFileGmail(
+
+                fileInput,
+
+                doc,
+
+                attachButton,
+
+                wrapper,
+
+                documents,
+
+                uploadedDocs
+
+            );
+
+        }
+
+    );
+
+    console.log("QuickDocs Gmail Ready");
+
+}
+
+
+// --------------------------------
+// MULTI-SELECT CHOOSER WIRING
+// (shared by the initial popup's
+// chooser and the post-upload
+// "Add More" chooser)
+// --------------------------------
+
+function setupChooserMultiSelect(
+
+    chooser,
+
+    documents,
+
+    onAttachSelected
+
+) {
+
+    const searchInput =
+        chooser.querySelector(".qd-search");
+
+    const attachSelectedBtn =
+        chooser.querySelector(".qd-attach-selected-btn");
+
+    const selectedIds = new Set();
+
     searchInput.addEventListener("input", () => {
 
         const value =
             searchInput.value.toLowerCase();
 
-        box.querySelectorAll(".qd-doc-item")
+        chooser.querySelectorAll(".qd-doc-item")
             .forEach(item => {
 
                 const matched =
@@ -517,18 +611,13 @@ async function createAttachPopup(
                         .includes(value);
 
                 item.style.display =
-                    matched ? "block" : "none";
+                    matched ? "flex" : "none";
 
             });
 
     });
 
-
-    // --------------------------------
-    // SELECT DOC FROM LIST
-    // --------------------------------
-
-    box.querySelectorAll(".qd-doc-item")
+    chooser.querySelectorAll(".qd-doc-item")
         .forEach(item => {
 
             item.addEventListener("click", () => {
@@ -536,25 +625,78 @@ async function createAttachPopup(
                 const docId =
                     Number(item.dataset.id);
 
-                const clickedDoc =
-                    documents.find(doc => doc.id === docId);
+                const check =
+                    item.querySelector(".qd-check");
 
-                if (clickedDoc) {
+                if (selectedIds.has(docId)) {
 
-                    selectedDoc = clickedDoc;
+                    selectedIds.delete(docId);
 
-                    fileNameElement.innerText =
-                        clickedDoc.name;
+                    item.classList.remove("qd-doc-item-selected");
 
-                    chooser.classList.add("hidden");
+                    if (check) check.textContent = "☐";
+
+                } else {
+
+                    selectedIds.add(docId);
+
+                    item.classList.add("qd-doc-item-selected");
+
+                    if (check) check.textContent = "☑";
 
                 }
+
+                attachSelectedBtn.disabled =
+                    selectedIds.size === 0;
 
             });
 
         });
 
-    console.log("QuickDocs Gmail Ready");
+    attachSelectedBtn.addEventListener("click", async () => {
+
+        const picked =
+            documents.filter(doc =>
+                selectedIds.has(doc.id)
+            );
+
+        if (!picked.length) return;
+
+        attachSelectedBtn.disabled = true;
+
+        attachSelectedBtn.textContent = "Attaching...";
+
+        // Sequential, not parallel — dispatching several
+        // "change" events on the same input back-to-back
+        // without waiting can cause Gmail to drop some of
+        // them, so each attach waits for the previous one.
+        for (const doc of picked) {
+
+            await onAttachSelected(doc);
+
+        }
+
+        selectedIds.clear();
+
+        chooser.querySelectorAll(".qd-doc-item")
+            .forEach(item => {
+
+                item.classList.remove("qd-doc-item-selected");
+
+                const check =
+                    item.querySelector(".qd-check");
+
+                if (check) check.textContent = "☐";
+
+            });
+
+        attachSelectedBtn.disabled = true;
+
+        attachSelectedBtn.textContent = "Attach Selected";
+
+        chooser.classList.add("hidden");
+
+    });
 
 }
 
@@ -572,11 +714,28 @@ async function injectFileGmail(
 
     attachButton,
 
-    wrapper
+    wrapper,
+
+    documents,
+
+    uploadedDocs
 
 ) {
 
     try {
+
+        const composeRoot =
+            attachButton.closest('div[role="dialog"]') ||
+            document;
+
+        // Gmail can swap out the hidden file input between
+        // attach actions, so re-query it fresh here rather
+        // than trusting the reference captured when the
+        // popup first opened. Falls back to the original
+        // reference if a fresh one can't be found.
+        const currentFileInput =
+            composeRoot.querySelector('input[type="file"]') ||
+            fileInput;
 
         const uint8Array =
             new Uint8Array(doc.buffer);
@@ -620,10 +779,10 @@ async function injectFileGmail(
 
 
         // ATTEMPT 1 — standard input + change event
-        fileInput.files =
+        currentFileInput.files =
             dataTransfer.files;
 
-        fileInput.dispatchEvent(
+        currentFileInput.dispatchEvent(
 
             new Event(
                 "change",
@@ -638,10 +797,6 @@ async function injectFileGmail(
         await new Promise(resolve =>
             setTimeout(resolve, 500)
         );
-
-        const composeRoot =
-            attachButton.closest('div[role="dialog"]') ||
-            document;
 
         const uploadedIndicator =
             [...composeRoot.querySelectorAll('[aria-label], [title]')]
@@ -687,15 +842,28 @@ async function injectFileGmail(
 
         }
 
+        // Record this doc as attached (avoid duplicate
+        // back-to-back entries if the same doc is clicked twice)
+        if (
+            !uploadedDocs.length ||
+            uploadedDocs[uploadedDocs.length - 1].id !== doc.id
+        ) {
+
+            uploadedDocs.push(doc);
+
+        }
+
         showUploadSuccess(
 
             wrapper,
 
-            doc,
+            uploadedDocs,
 
-            fileInput,
+            documents,
 
-            attachButton
+            attachButton,
+
+            fileInput
 
         );
 
@@ -719,16 +887,27 @@ function showUploadSuccess(
 
     wrapper,
 
-    doc,
+    uploadedDocs,
 
-    fileInput,
+    documents,
 
-    attachButton
+    attachButton,
+
+    fileInput
 
 ) {
 
     const box =
         wrapper.querySelector(".quickdocs-box");
+
+    const uploadedListHTML =
+        uploadedDocs.map(d => `
+
+            <div class="qd-uploaded-file">
+                📄 ${d.name}
+            </div>
+
+        `).join("");
 
     box.innerHTML = `
 
@@ -742,17 +921,70 @@ function showUploadSuccess(
                 ✅ Uploaded
             </div>
 
-            <div class="qd-uploaded-file">
-                ${doc.name}
+            ${uploadedListHTML}
+
+            <div class="qd-success-actions">
+
+                <button class="qd-addmore-btn">
+                    Add More
+                </button>
+
             </div>
 
-            <button class="qd-change-btn">
-                Change
-            </button>
+            <div class="qd-chooser hidden">
+
+                <input
+                    class="qd-search"
+                    placeholder="Search..."
+                >
+
+                <div class="qd-doc-list">
+
+                    ${documents.map(doc => `
+
+                        <div
+                            class="qd-doc-item"
+                            data-id="${doc.id}"
+                        >
+
+                            <span class="qd-check">☐</span> 📄 ${doc.name}
+
+                        </div>
+
+                    `).join("")}
+
+                </div>
+
+                <button class="qd-attach-selected-btn" disabled>
+                    Attach Selected
+                </button>
+
+            </div>
 
         </div>
 
     `;
+
+    const chooser =
+        box.querySelector(".qd-chooser");
+
+    const searchInput =
+        box.querySelector(".qd-search");
+
+    // The box just switched from the "Suggested" view to
+    // the "Uploaded" success view — its height changed, so
+    // reposition immediately instead of waiting for the
+    // next scroll/resize event.
+    positionPopup(wrapper, box, attachButton);
+
+    requestAnimationFrame(() =>
+        positionPopup(wrapper, box, attachButton)
+    );
+
+
+    // --------------------------------
+    // CLOSE
+    // --------------------------------
 
     box.querySelector(".qd-close")
         .addEventListener("click", () => {
@@ -761,22 +993,72 @@ function showUploadSuccess(
 
         });
 
-    box.querySelector(".qd-change-btn")
+
+    // --------------------------------
+    // ADD MORE — reopen the same
+    // search/list chooser inline,
+    // without losing the uploaded
+    // history above it
+    // --------------------------------
+
+    box.querySelector(".qd-addmore-btn")
         .addEventListener("click", () => {
 
-            wrapper.remove();
+            chooser.classList.toggle("hidden");
 
-            attachButton.dataset.quickdocsPopup = "";
+            if (!chooser.classList.contains("hidden")) {
 
-            createAttachPopup(
+                searchInput.focus();
 
-                attachButton,
+            }
 
-                fileInput
+            // Box height just changed (chooser opened/closed)
+            // — reposition immediately instead of waiting for
+            // the next scroll/resize event.
+            positionPopup(wrapper, box, attachButton);
 
+            requestAnimationFrame(() =>
+                positionPopup(wrapper, box, attachButton)
             );
 
         });
+
+
+    // --------------------------------
+    // MULTI-SELECT + ATTACH SELECTED
+    // --------------------------------
+
+    setupChooserMultiSelect(
+
+        chooser,
+
+        documents,
+
+        async (doc) => {
+
+            // Re-uses the same injection path as the
+            // first upload — appends rather than replaces,
+            // and re-renders this success screen with the
+            // new file added to the list.
+            await injectFileGmail(
+
+                fileInput,
+
+                doc,
+
+                attachButton,
+
+                wrapper,
+
+                documents,
+
+                uploadedDocs
+
+            );
+
+        }
+
+    );
 
 }
 
